@@ -18,7 +18,7 @@ void analyze_decay_angles()
     gStyle->SetOptStat(1111);
     gStyle->SetOptFit(1111);
 
-    // --- 1. Setup Chain ---
+    
     TChain *hitsTree = new TChain("Hits");
     hitsTree->Add("out_*.root");
 
@@ -28,7 +28,7 @@ void analyze_decay_angles()
         return;
     }
 
-    // --- 2. Define Branches ---
+    
     Int_t   EventID;
     Int_t   GammaIndex;
     Char_t  HitProcess[20];
@@ -89,7 +89,7 @@ void analyze_decay_angles()
         }
     }
 
-    // --- 5. Define Histograms ---
+    // 
     // Bins from 0 to 180 degrees
     TH1F *hAng12 = new TH1F("hAng12", "Opening Angle #gamma_{1}-#gamma_{2};Angle (deg);Events", 180, 0, 180);
     TH1F *hAng23 = new TH1F("hAng23", "Opening Angle #gamma_{2}-#gamma_{3};Angle (deg);Events", 180, 0, 180);
@@ -102,7 +102,7 @@ void analyze_decay_angles()
     int totalEvents = 0;
     int selectedEvents = 0;
 
-    // --- 6. Loop over Events ---
+   
     for (auto &evt : events)
     {
         // Require exactly 3 gammas
@@ -115,26 +115,25 @@ void analyze_decay_angles()
         auto &g1 = evt.second[1];
         auto &g2 = evt.second[2];
 
-        // Require full Compton scatter for all 3 (to have Theta defined)
+        
         if (!g0.hasSecond || !g1.hasSecond || !g2.hasSecond) continue;
 
-        // Calculate Incident Unit Vectors (Direction immediately after decay)
-        // Vector from Vertex to First Hit
+
         TVector3 kin0 = (g0.hit1 - g0.vertex).Unit();
         TVector3 kin1 = (g1.hit1 - g1.vertex).Unit();
         TVector3 kin2 = (g2.hit1 - g2.vertex).Unit();
 
-        // Calculate Opening Angles (in degrees)
+     
         double ang12 = kin0.Angle(kin1) * TMath::RadToDeg();
         double ang23 = kin1.Angle(kin2) * TMath::RadToDeg();
         double ang13 = kin0.Angle(kin2) * TMath::RadToDeg();
 
-        // Fill "No Selection"
+   
         hAng12->Fill(ang12);
         hAng23->Fill(ang23);
         hAng13->Fill(ang13);
 
-        // Check Compton Selection (82-85 degrees)
+        
         bool passSel = (g0.theta >= 82 && g0.theta <= 85) &&
                        (g1.theta >= 82 && g1.theta <= 85) &&
                        (g2.theta >= 82 && g2.theta <= 85);
@@ -152,7 +151,7 @@ void analyze_decay_angles()
     std::cout << "Total valid 3-gamma events: " << totalEvents << std::endl;
     std::cout << "Events passing Compton selection (82-85): " << selectedEvents << std::endl;
 
-    // --- 7. Calculate Averages ---
+
     auto printAvg = [](TH1F* h, const char* name) {
         if (h->GetEntries() > 0) {
             std::cout << name << " Mean: " << h->GetMean() << " +/- " << h->GetRMS() << " deg" << std::endl;
@@ -171,11 +170,11 @@ void analyze_decay_angles()
     printAvg(hAng23_sel, "Angle 2-3");
     printAvg(hAng13_sel, "Angle 1-3");
 
-    // --- 8. Plotting ---
+
     TCanvas *c = new TCanvas("c", "Decay Opening Angles", 1600, 1200);
     c->Divide(2, 2);
 
-    // Plot 1: No Selection Overlay
+
     c->cd(1);
     hAng12->SetLineColor(kBlue);
     hAng23->SetLineColor(kRed);
@@ -196,7 +195,7 @@ void analyze_decay_angles()
     tex1->SetTextSize(0.05);
     tex1->Draw();
 
-    // Plot 2: Selected Overlay
+
     c->cd(2);
     if (selectedEvents > 0) {
         hAng12_sel->SetLineColor(kBlue);
@@ -223,7 +222,6 @@ void analyze_decay_angles()
         texNo->Draw();
     }
 
-    // Plot 3: Difference (12 - 23) No Selection
     c->cd(3);
     TH1F *hDiff = (TH1F*)hAng12->Clone("hDiff");
     hDiff->Add(hAng23, -1);
@@ -232,7 +230,6 @@ void analyze_decay_angles()
     hDiff->Draw("HIST");
     gPad->SetGridx();
 
-    // Plot 4: Difference (12 - 23) Selected
     c->cd(4);
     if (selectedEvents > 0) {
         TH1F *hDiffSel = (TH1F*)hAng12_sel->Clone("hDiffSel");
