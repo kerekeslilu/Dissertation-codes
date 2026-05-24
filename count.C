@@ -65,7 +65,7 @@ void count() {
     int n12 = 0, n23 = 0, n13 = 0;
 
     for (auto& [evt, gammas] : eventGammas) {
-        // We expect GammaIndex = 0,1,2 for 3-photon events
+        //  GammaIndex = 0,1,2 for 3-photon events
         if (gammas.size() < 3) continue;
 
         auto& g = gammas;
