@@ -21,7 +21,7 @@ void R_histogram() {
     Ntuple->SetBranchAddress("Gamma2_Theta", &t2);
     Ntuple->SetBranchAddress("dPhi", &dphi);
 
-    // 5° binning
+    // 5 deg binning
     const int Nbins = 180/5;
     TH3F *h_Rmap = new TH3F("h_Rmap",
                             "R(Theta1,Theta2);Theta1 [deg];Theta2 [deg];R",
