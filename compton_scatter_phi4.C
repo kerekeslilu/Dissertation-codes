@@ -58,7 +58,7 @@ void compton_scatter_phi()
 
     std::map<int, std::map<int, HitData>> events;
 
-    // --- Step 1: Build Event Map ---
+   
     for (Long64_t i=0;i<nentries;++i)
     {
         hitsTree->GetEntry(i);
@@ -81,8 +81,7 @@ void compton_scatter_phi()
         }
     }
 
-    // --- Step 2: Define Histograms ---
-    // Added histograms for Symmetric Selection
+  
     TH1F *hDphi12_sym = new TH1F("hDphi12_sym","#Delta#phi_{12} (Symmetric Selection);#Delta#phi (deg);Counts",100,-180,180);
     TH1F *hDphi23_sym = new TH1F("hDphi23_sym","#Delta#phi_{23} (Symmetric Selection);#Delta#phi (deg);Counts",100,-180,180);
     TH1F *hDphi13_sym = new TH1F("hDphi13_sym","#Delta#phi_{13} (Symmetric Selection);#Delta#phi (deg);Counts",100,-180,180);
@@ -101,7 +100,7 @@ void compton_scatter_phi()
     int filledEvents=0;
     int symEvents=0;
 
-    // --- Step 3: Analysis Loop ---
+
     for(auto &evt:events)
     {
         if(evt.second.size()!=3) continue;
@@ -112,7 +111,7 @@ void compton_scatter_phi()
 
         if(!g0.hasSecond || !g1.hasSecond || !g2.hasSecond) continue;
 
-        // Define Kinematics
+     
         TVector3 kin0  = (g0.hit1 - g0.vertex).Unit();
         TVector3 kout0 = (g0.hit2 - g0.hit1).Unit();
         TVector3 kin1  = (g1.hit1 - g1.vertex).Unit();
@@ -120,16 +119,16 @@ void compton_scatter_phi()
         TVector3 kin2  = (g2.hit1 - g2.vertex).Unit();
         TVector3 kout2 = (g2.hit2 - g2.hit1).Unit();
 
-        // Calculate Angles Between Photons (for Symmetric Cut)
+
         double angle12 = kin0.Angle(kin1);
         double angle23 = kin1.Angle(kin2);
         double angle13 = kin0.Angle(kin2);
 
-        // Calculate Decay Plane Normal
-        TVector3 nDecay = (kin0-kin1).Cross(kin0-kin2).Unit();
-        if (nDecay.Mag() == 0) continue; // Skip collinear events
 
-        // Compute Phi for each photon
+        TVector3 nDecay = (kin0-kin1).Cross(kin0-kin2).Unit();
+        if (nDecay.Mag() == 0) continue; 
+
+
         auto computePhi = [&](TVector3 kin,TVector3 kout)
         {
             TVector3 x = nDecay.Cross(kin).Unit();
@@ -146,7 +145,7 @@ void compton_scatter_phi()
         double dphi23 = deltaPhi(phi1,phi2);
         double dphi13 = deltaPhi(phi0,phi2);
 
-        // --- CUT 1: Symmetric Kinematics (Dalitz Center) ---
+   
         // Approx 120 degrees = 2.094 rad. Window 115-125 deg (2.0 - 2.2 rad)
         bool isSymmetric = (angle12 > 2.0 && angle12 < 2.2 &&
                             angle23 > 2.0 && angle23 < 2.2 &&
@@ -159,7 +158,7 @@ void compton_scatter_phi()
             symEvents++;
         }
 
-        // --- CUT 2: Polar Angle Selection ---
+       
         if (g0.theta >= 80 && g0.theta <= 90 &&
             g1.theta >= 80 && g1.theta <= 90 &&
             g2.theta >= 80 && g2.theta <= 90)
@@ -175,10 +174,10 @@ void compton_scatter_phi()
     std::cout<<"Total Valid Events: "<<filledEvents<<std::endl;
     std::cout<<"Symmetric Events: "<<symEvents<<std::endl;
 
-    // --- Step 4: Fitting ---
+    
     TF1 *fitFcn = new TF1("fitFcn","[0]*cos(2*TMath::DegToRad()*x)+[1]",-180,180);
     
-    // Fit Symmetric Histograms
+
     TH1F* hSymList[] = {hDphi12_sym, hDphi23_sym, hDphi13_sym};
     const char* namesSym[] = {"12", "23", "13"};
     
@@ -203,7 +202,7 @@ void compton_scatter_phi()
     }
     c_sym->SaveAs("dphi_symmetric_selection.pdf");
 
-    // Fit Theta Selection Histograms (Existing logic)
+ 
     TH1F* hSelList[] = {hDphi12_sel, hDphi23_sel, hDphi13_sel};
     TCanvas *c_sel = new TCanvas("c_sel","Theta Selection",2400,1000);
     c_sel->Divide(3,1);
